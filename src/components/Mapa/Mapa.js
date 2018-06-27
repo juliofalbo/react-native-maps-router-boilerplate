@@ -3,12 +3,13 @@ import { Platform, Dimensions, StyleSheet, View, TouchableOpacity, Text, Alert, 
 import { MapView, Constants, Location, Permissions } from 'expo';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import MapViewDirections from '../../services/MapViewDirections';
+import AutocompleteModal from '../Modal/AutocompleteModal';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import Spinner from 'react-native-loading-spinner-overlay';
 
 const { width, height } = Dimensions.get('window');
 
-const GOOGLE_MAPS_APIKEY = 'SUA_KEY';
+const GOOGLE_MAPS_APIKEY = 'AIzaSyA_R9iPnJ1B6WKZZF1LH9V7-8CrrEQUXSc';
 
 const pin1 = require('../../../assets/imgs/pin1.png');
 const pin2 = require('../../../assets/imgs/pin2.png');
@@ -54,8 +55,8 @@ class Mapa extends Component {
   goTo = (goToLocation, destinationText) => {
     const coordinates = [
       {
-        latitude: origin.latitude,
-        longitude: origin.longitude,
+        latitude: this.state.origin.latitude,
+        longitude: this.state.origin.longitude,
       },
       {
         latitude: goToLocation.lat,
@@ -86,16 +87,24 @@ class Mapa extends Component {
     }
   }
 
-  componentWillMount = async () => {
+  showCurrentLocationMarker = () => {
+    if (this.state.duration === '0 min') {
+      return (
+        <MapView.Marker coordinate={this.state.currentLocation}
+          image={pin1} />
+      );
+    }
+  }
+
+  componentWillMount = () => {
     if (Platform.OS === 'android' && !Constants.isDevice) {
       Alert.alert('Opa, não é possível recuperar o GPS do Emulador Android, tente em um aparelho!');
     } else {
-      await this.getLocationAsync();
+      this.getLocationAsync();
     }
   }
 
   getLocationAsync = async () => {
-    console.log('entrou no willMount');
     let { status } = await Permissions.askAsync(Permissions.LOCATION);
     if (status !== 'granted') {
       Alert.alert('Para que o Aplicativo funcione, precisamos da sua permissão para recupermos sua localização!');
@@ -108,158 +117,41 @@ class Mapa extends Component {
         longitudeDelta: LONGITUDE_DELTA
       };
       await this.setState({ currentLocation, loading: true });
-      console.log(this.state.currentLocation);
     }
   };
 
   render() {
-    if(this.state.loading){
+    if (this.state.loading) {
       return (
         <View style={styles.container}>
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={this.state.modalOriginVisible}
-            onRequestClose={() => {
-              // alert('Destino escolhido.');
-            }}>
-            <View style={styles.modal}>
-              <View style={styles.modalHeader}>
-                <Text>Informar sua origem</Text>
-                <TouchableOpacity onPress={() => this.setModalOriginVisible(false)}>
-                  <Text style={styles.textCloseModal}>Cancelar</Text>
-                </TouchableOpacity>
-              </View>
-              <GooglePlacesAutocomplete
-                placeholder='Pesquisar'
-                minLength={7} // minimum length of text to search
-                autoFocus={false}
-                fetchDetails={true}
-                onPress={(data, details = null) => { // 'details' is provided when fetchDetails = true
-                  this.saveOrigin(details.geometry.location, details.formatted_address);
-                }}
-                getDefaultValue={() => {
-                  return ''; // text input default value
-                }}
-                query={{
-                  // available options: https://developers.google.com/places/web-service/autocomplete
-                  key: GOOGLE_MAPS_APIKEY,
-                  language: 'pt_BR', // language of the results
-                  location: `${this.state.currentLocation.latitude}, ${this.state.currentLocation.longitude}`,
-                  radius: '90000', //90km
-                  components: 'country:br',
-                  types: ['geocode', 'establishment'], // default: 'geocode',
-                  strictbounds: true
-                }}
-                styles={{
-                  container: {
-                    flex: 1
-                  },
-                  listView: {
-                    flex: 1
-                  },
-                  description: {
-                    fontWeight: 'bold',
-                  },
-                  predefinedPlacesDescription: {
-                    color: '#1faadb',
-                    borderBottomColor: '#063746',
-                    borderBottomWidth: 1,
-                  },
-                  textInputContainer: {
-                    backgroundColor: 'white',
-                    borderBottomColor: '#063746',
-                    borderBottomWidth: 1,
-                  }
-                }}
-                currentLocation={true} // Will add a 'Current location' button at the top of the predefined places list
-                currentLocationLabel="Localização Atual"
-                nearbyPlacesAPI='GooglePlacesSearch' // Which API to use: GoogleReverseGeocoding or GooglePlacesSearch
-                GoogleReverseGeocodingQuery={{
-                  // available options for GoogleReverseGeocoding API : https://developers.google.com/maps/documentation/geocoding/intro
-                }}
-                GooglePlacesSearchQuery={{
-                  // available options for GooglePlacesSearch API : https://developers.google.com/places/web-service/search
-                  rankby: 'distance',
-                  types: 'food',
-                }}
-                predefinedPlacesAlwaysVisible={true}
-              />
 
-            </View>
-          </Modal>
 
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={this.state.modalDestinationVisible}
-            onRequestClose={() => {
-              // alert('Destino escolhido.');
-            }}>
-            <View style={styles.modal}>
-              <View style={styles.modalHeader}>
-                <Text>Informar seu destino</Text>
-                <TouchableOpacity onPress={() => this.setModalDestinationVisible(false)}>
-                  <Text style={styles.textCloseModal}>Cancelar</Text>
-                </TouchableOpacity>
-              </View>
-              <GooglePlacesAutocomplete
-                placeholder='Pesquisar'
-                minLength={7} // minimum length of text to search
-                autoFocus={false}
-                fetchDetails={true}
-                onPress={(data, details = null) => { // 'details' is provided when fetchDetails = true
-                  this.goTo(details.geometry.location, details.formatted_address);
-                }}
-                getDefaultValue={() => {
-                  return ''; // text input default value
-                }}
-                query={{
-                  // available options: https://developers.google.com/places/web-service/autocomplete
-                  key: GOOGLE_MAPS_APIKEY,
-                  language: 'pt_BR', // language of the results
-                  location: `${this.state.currentLocation.latitude}, ${this.state.currentLocation.longitude}`,
-                  radius: '90000', //90km
-                  components: 'country:br',
-                  types: ['geocode', 'establishment'], // default: 'geocode',
-                  strictbounds: true
-                }}
-                styles={{
-                  container: {
-                    flex: 1
-                  },
-                  listView: {
-                    flex: 1
-                  },
-                  description: {
-                    fontWeight: 'bold',
-                  },
-                  predefinedPlacesDescription: {
-                    color: '#1faadb',
-                    borderBottomColor: '#063746',
-                    borderBottomWidth: 1,
-                  },
-                  textInputContainer: {
-                    backgroundColor: 'white',
-                    borderBottomColor: '#063746',
-                    borderBottomWidth: 1,
-                  }
-                }}
-                currentLocation={false} // Will add a 'Current location' button at the top of the predefined places list
-                nearbyPlacesAPI='GooglePlacesSearch' // Which API to use: GoogleReverseGeocoding or GooglePlacesSearch
-                GoogleReverseGeocodingQuery={{
-                  // available options for GoogleReverseGeocoding API : https://developers.google.com/maps/documentation/geocoding/intro
-                }}
-                GooglePlacesSearchQuery={{
-                  // available options for GooglePlacesSearch API : https://developers.google.com/places/web-service/search
-                  rankby: 'distance',
-                  types: 'food',
-                }}
-                predefinedPlacesAlwaysVisible={true}
-              />
 
-            </View>
-          </Modal>
+
+
+
+
+
+          <AutocompleteModal
+            text="Informar sua origem"
+            modalVisible={this.state.modalOriginVisible}
+            setModalVisible={this.setModalOriginVisible}
+            save={this.saveOrigin}
+            googleKey={GOOGLE_MAPS_APIKEY}
+            showCurrentLocationButton={true}
+            currentLocation={this.state.currentLocation}
+          />
+
+
+          <AutocompleteModal
+            text="Informar seu destino"
+            modalVisible={this.state.modalDestinationVisible}
+            setModalVisible={this.setModalDestinationVisible}
+            save={this.goTo}
+            googleKey={GOOGLE_MAPS_APIKEY}
+            showCurrentLocationButton={false}
+            currentLocation={this.state.currentLocation}
+          />
 
           <MapView
             initialRegion={this.state.currentLocation}
@@ -267,8 +159,7 @@ class Mapa extends Component {
             ref={c => this.mapView = c}
           // onPress={this.onMapPress}
           >
-            <MapView.Marker coordinate={this.state.currentLocation}
-              image={pin1} />
+            {this.showCurrentLocationMarker()}
 
             {this.state.coordinates.map((coordinate, index) => {
               if (index === 1) {
@@ -318,7 +209,7 @@ class Mapa extends Component {
           </MapView>
 
           <View style={styles.header}>
-            <Text style={styles.taxiRio}>JFalbo</Text>
+            <Text style={styles.textLogo}>JFalbo</Text>
           </View>
 
           <View style={styles.buttonContainer}>
@@ -344,42 +235,18 @@ class Mapa extends Component {
 
     return (
       <View style={{ flex: 1 }}>
-        <Spinner visible={this.state.loading} textContent={"Loading..."} textStyle={{color: '#FFF'}} />
+        <Spinner visible={this.state.loading} textContent={"Loading..."} textStyle={{ color: '#FFF' }} />
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  customView: {
-    width: 140,
-    height: 100,
-  },
-  plainView: {
-    width: 60,
-  },
   container: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'flex-end',
     alignItems: 'center',
     padding: 20
-  },
-  modal: {
-    flex: 1,
-    backgroundColor: 'white',
-    marginLeft: 10,
-    marginRight: 10,
-    marginTop: 10
-  },
-  modalRATR: {
-    flex: 1,
-    backgroundColor: 'white',
-    marginLeft: 10,
-    marginRight: 10,
-    marginTop: 10,
-    alignItems: 'center',
-    borderTopColor: '#063746',
-    borderTopWidth: 5,
   },
   map: {
     ...StyleSheet.absoluteFillObject,
@@ -401,8 +268,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomColor: '#063746',
     borderBottomWidth: 1,
-    borderBottomRightRadius: 5,
-    borderBottomLeftRadius: 5
   },
   button: {
     width: 80,
@@ -424,24 +289,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#ffc854'
   },
-  textCloseButtonEstimatedValue: {
-    color: '#ffc854'
-  },
-  textButton: {
-    flex: 1,
-    margin: 10,
-    fontSize: 14,
-    color: 'white'
-  },
   textButtonSearchAdress: {
     flex: 1,
     margin: 10,
     fontSize: 14,
     color: '#ffc854'
   },
-
   buttonContainer: {
-    height: 50,
+    height: 70,
     flexDirection: 'row',
     backgroundColor: 'transparent'
   },
@@ -449,42 +304,6 @@ const styles = StyleSheet.create({
     height: 50,
     flexDirection: 'row',
     backgroundColor: 'transparent',
-  },
-  boxContainerButtonRATR: {
-    height: 80,
-    flexDirection: 'row',
-    backgroundColor: 'transparent',
-  },
-  boxContainerHeader: {
-    height: 40,
-    flexDirection: 'row',
-    backgroundColor: 'transparent',
-  },
-
-  boxBubbleHeader: {
-    flex: 1,
-    backgroundColor: '#007889',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderTopRightRadius: 5,
-    borderTopLeftRadius: 5,
-    marginTop: 10
-  },
-  boxBubbleTop: {
-    flex: 1,
-    backgroundColor: '#008c9d',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderTopRightRadius: 5,
-    borderTopLeftRadius: 5
-  },
-  boxBubbleMiddle: {
-    flex: 1,
-    backgroundColor: '#008c9d',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderBottomColor: '#007889',
-    borderBottomWidth: 1,
   },
   boxBubbleBottom: {
     flex: 1,
@@ -494,10 +313,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 5,
     borderBottomLeftRadius: 5,
   },
-  iconMarker: {
-    borderWidth: 3,
-    borderColor: 'rgba(1,33,54,1)'
-  },
   box: {
     paddingHorizontal: 12,
     alignItems: 'center',
@@ -505,101 +320,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  calloutPrice: {
-    backgroundColor: '#ffc854',
-    borderLeftWidth: 2,
-    borderColor: 'rgba(1,33,54,1)',
-    width: 100
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    margin: 10
-  },
-  textCloseModal: {
-    color: 'red'
-  },
-  buttonValidateRATROpenModal: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffc854',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 5,
-    marginHorizontal: 10,
-    flexDirection: 'row',
-    marginTop: 10
-  },
-  buttonValidateCalculatorModal: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffc854',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 5,
-    marginBottom: 10,
-    marginHorizontal: 10,
-    flexDirection: 'row',
-    marginTop: 10
-  },
-  textButtonValidateRATR: {
-    color: 'black',
-    fontWeight: 'bold',
-  },
-  titleModalRATR: {
-    fontWeight: 'bold',
-    fontSize: 20,
-  },
-  viewTitleModalRATR: {
-    flex: 1,
-    alignItems: 'flex-end'
-  },
-  inputTextRATRView: {
-    margin: 30
-  },
-  inputTextRATR: {
-    width: 200,
-    height: 44,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: '#ccc'
-  },
-  buttonValidateRATR: {
-    width: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffc854',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 5,
-    marginBottom: 10,
-    marginHorizontal: 10,
-    flexDirection: 'row',
-    width: 200,
-  },
-  resultValidateRATR: {
-    flexDirection: 'row',
-  },
-  unavailableRATR: {
-    margin: 5,
-    fontWeight: 'bold',
-    fontSize: 20,
-    color: 'red'
-  },
-  availableRATR: {
-    margin: 5,
-    fontWeight: 'bold',
-    fontSize: 20,
-    color: 'green'
-  },
   header: {
     alignItems: 'center',
     flex: 1,
     marginTop: 50
   },
-  taxiRio: {
+  textLogo: {
     fontWeight: 'bold',
     fontSize: 24,
   }
