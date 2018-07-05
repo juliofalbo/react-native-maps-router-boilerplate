@@ -8,7 +8,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
 
 const { width, height } = Dimensions.get('window');
 
-const GOOGLE_MAPS_APIKEY = 'AIzaSyA_R9iPnJ1B6WKZZF1LH9V7-8CrrEQUXSc';
+const GOOGLE_MAPS_APIKEY = 'SUA_API_KEY_AQUI';
 
 const pin1 = require('../../../assets/imgs/pin1.png');
 const pin2 = require('../../../assets/imgs/pin2.png');
