@@ -10,7 +10,7 @@ export default class App extends React.Component {
                 transparent={true}
                 visible={this.props.modalVisible}
                 onRequestClose={() => {
-                    // alert('Destino escolhido.');
+                    // alert('Local escolhido.');
                 }}>
                 <View style={styles.modal}>
                     <View style={styles.modalHeader}>
@@ -23,7 +23,6 @@ export default class App extends React.Component {
                         placeholder='Pesquisar'
                         minLength={5} // minimum length of text to search
                         autoFocus={false}
-                        debounce={200}
                         listViewDisplayed='auto'
                         fetchDetails={true}
                         onPress={(data, details = null) => { // 'details' is provided when fetchDetails = true

@@ -4,7 +4,6 @@ import { MapView, Constants, Location, Permissions } from 'expo';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import MapViewDirections from '../../services/MapViewDirections';
 import AutocompleteModal from '../Modal/AutocompleteModal';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import Spinner from 'react-native-loading-spinner-overlay';
 
 const { width, height } = Dimensions.get('window');
