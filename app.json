@@ -1,5 +1,25 @@
 {
   "expo": {
-    "sdkVersion": "27.0.0"
+    "name": "JFalboRotas",
+    "icon": "./assets/imgs/icone.png",
+    "version": "1.0.0",
+    "slug": "JFalboRotas",
+    "sdkVersion": "27.0.0",
+    "orientation": "portrait",
+    "splash": {
+      "image": "./assets/imgs/splash.png",
+      "resizeMode": "cover"
+    },
+    "ios": {
+      "bundleIdentifier": "tech.juliofalbo"
+    },
+    "android": {
+      "package": "tech.juliofalbo",
+      "config": {
+        "googleMaps": {
+          "apiKey": "SUA_API_AQUI"
+        }
+      }
+    }
   }
 }
